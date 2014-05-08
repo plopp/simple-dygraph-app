@@ -1,0 +1,114 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+    <link href="stylesheet/pace-stylesheet.css" rel="stylesheet" />
+    <script src="lib/jquery-2.0.0.min.js"></script>
+    <script type='text/javascript' src='lib/dygraph-combined.js'></script>
+    <!-- Latest compiled and minified CSS -->
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script data-pace-options='{ "ajax": true }' src="lib/pace.min.js"></script>
+    
+    <script>
+      $(function() {
+
+
+
+        var doAjaxCall = function(url){
+          //Pace.restart();
+          $.ajax({
+            url: url,
+            dataType: "jsonp"
+          });
+        }
+
+
+        $(document).ajaxStart(function() { $("#loading").show(); Pace.restart(); });
+        $(document).ajaxStop(function() { $("#loading").hide(); Pace.stop(); });
+
+        var windowheight = $(window).height();
+        var windowwidth = $(window).width();
+        $("#graphdiv2").height(windowheight-200);
+        $("#graphdiv2").width(windowwidth-25);
+
+        // for the window resize
+        $(window).resize(function() {
+            var windowheight = $(window).height();
+            var windowwidth = $(window).width();
+            $("#graphdiv2").height(windowheight-200);
+            $("#graphdiv2").width(windowwidth-25);
+        });
+
+        $("#year").click(function(){
+          var now = new Date().getTime();
+          var endkey = now - 365*24*3600*1000;
+          var url = 'https://livinglab.powerprojects.se:6984/et_pvdata/_design/power/_view/foo?callback=dd&descending=true&endkey='+endkey;
+          doAjaxCall(url);
+        });
+
+        $("#month").click(function(){
+          var now = new Date().getTime();
+          var endkey = now - 31*24*3600*1000;
+          var url = 'https://livinglab.powerprojects.se:6984/et_pvdata/_design/power/_view/foo?callback=dd&descending=true&endkey='+endkey;
+          doAjaxCall(url);
+        });
+
+        $("#week").click(function(){      
+          var now = new Date().getTime();
+          var endkey = now - 7*24*3600*1000;
+          var url = 'https://livinglab.powerprojects.se:6984/et_pvdata/_design/power/_view/foo?callback=dd&descending=true&endkey='+endkey;
+          doAjaxCall(url);
+        });
+
+        $("#24hr").click(function(){
+          var now = new Date().getTime();
+          var endkey = now - 24*3600*1000;
+          var url = 'https://livinglab.powerprojects.se:6984/et_pvdata/_design/power/_view/foo?callback=dd&descending=true&endkey='+endkey;
+          doAjaxCall(url);
+        });
+
+        //Startup view 24hr
+        var now = new Date().getTime();
+        var endkey = now - 24*3600*1000;
+        var url = 'https://livinglab.powerprojects.se:6984/et_pvdata/_design/power/_view/foo?callback=dd&descending=true&endkey='+endkey;
+        doAjaxCall(url);
+        
+        var g2;
+
+        window.dd = function(data){
+          var datarr = [];
+          console.log(data.rows.length);
+          data.rows.forEach(function(o,i){
+            datarr.push([new Date(o.key),o.value]);
+          });
+          datarr = datarr.reverse();
+
+          if(g2 === undefined){          
+            g2 = new Dygraph(
+              document.getElementById("graphdiv2"),
+              datarr, // path to data/CSV file
+              {animatedZooms: true}          // options
+            );
+          }else{
+            g2.destroy();          
+            g2 = new Dygraph(
+              document.getElementById("graphdiv2"),
+              datarr, // path to CSV file
+              {animatedZooms: true}          // options
+            );
+          }
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <body>
+    <div id="loading">Loading</div>
+    <button id="year" class="btn-group btn-group-lg">Year</button><button id="month" class="btn-group btn-group-lg">Month</button><button id="week" class="btn-group btn-group-lg">Week</button><button id="24hr" class="btn-group btn-group-lg">24hr</button>
+    <div id="graphdiv2" style="width:1200px; height:800px;"></div>
+  </body>
+</html>
